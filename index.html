@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaOS 1.1 Ultra</title>
+
+<style>
+:root {
+  --accent:#8b7cff;
+  --panel:rgba(15,21,42,.88);
+  --panel2:rgba(28,35,61,.96);
+  --text:#f5f7ff;
+  --muted:#aeb9d5;
+  --border:rgba(255,255,255,.16);
+  --shadow:0 25px 80px rgba(0,0,0,.45);
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:#080e20;
+  color:var(--text);
+  overflow:hidden;
+}
+
+button,input,textarea,select {
+  font:inherit;
+}
+
+button {
+  border:0;
+  color:inherit;
+  cursor:pointer;
+}
+
+button:hover {
+  filter:brightness(1.2);
+}
+
+[hidden] {
+  display:none!important;
+}
+
+body.light {
+  --panel:rgba(245,248,255,.94);
+  --panel2:rgba(225,233,250,.98);
+  --text:#19243c;
+  --muted:#53617e;
+  --border:rgba(20,35,70,.2);
+}
+
+#desktop {
+  position:relative;
+  height:100dvh;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 75% 20%,#624bc0,transparent 42%),
+    radial-gradient(ellipse at 15% 85%,#087b9a,transparent 45%),
+    linear-gradient(135deg,#080e28,#21123e);
+}
+
+#desktop.aurora {
+  background:
+    radial-gradient(at 75% 15%,#15b7a1,transparent 50%),
+    linear-gradient(135deg,#091b38,#3c2576);
+}
+
+#desktop.sunset {
+  background:
+    radial-gradient(at 70% 20%,#ff9675,transparent 45%),
+    linear-gradient(135deg,#291536,#813e70);
+}
+
+#desktop.midnight {
+  background:linear-gradient(135deg,#02040d,#102a50);
+}
+
+#desktop.nebula {
+  background:
+    radial-gradient(at 30% 30%,#ba3da8,transparent 45%),
+    radial-gradient(at 75% 70%,#2258b9,transparent 50%),
+    #080c20;
+}
+
+#desktop::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(#ffffff07 1px,transparent 1px),
+    linear-gradient(90deg,#ffffff07 1px,transparent 1px);
+  background-size:65px 65px;
+}
+
+.top-label {
+  position:absolute;
+  top:22px;
+  right:25px;
+  color:#e4e9ff;
+  font-size:12px;
+  letter-spacing:3px;
+  text-shadow:0 2px 10px #000;
+}
+
+.desktop-icons {
+  position:absolute;
+  top:25px;
+  left:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.desktop-icon {
+  width:95px;
+  height:85px;
+  border-radius:14px;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  color:white;
+  text-shadow:0 2px 10px #000;
+  font-size:12px;
+}
+
+.desktop-icon span {
+  font-size:34px;
+}
+
+.desktop-icon:hover {
+  background:#ffffff25;
+}
+
+.taskbar {
+  position:absolute;
+  z-index:1000;
+  bottom:13px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding:8px 12px;
+  border:1px solid #ffffff35;
+  border-radius:20px;
+  background:rgba(12,19,37,.88);
+  backdrop-filter:blur(35px);
+  box-shadow:0 15px 55px #0008;
+  max-width:calc(100vw - 15px);
+}
+
+.taskbar button {
+  min-width:44px;
+  height:44px;
+  background:transparent;
+  border-radius:12px;
+  font-size:22px;
+}
+
+.taskbar button:hover {
+  background:#ffffff25;
+}
+
+.nova-logo {
+  display:inline-grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#a8b7ff,#7155ed);
+  color:white;
+  font-size:25px;
+  font-weight:900;
+}
+
+.task-clock {
+  color:white;
+  min-width:95px;
+  text-align:center;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.task-clock small {
+  display:block;
+  color:#bbc7e4;
+  margin-top:3px;
+}
+
+.menu {
+  position:absolute;
+  z-index:950;
+  bottom:90px;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(540px,calc(100vw - 24px));
+  max-height:calc(100dvh - 110px);
+  overflow:auto;
+  padding:24px;
+  border-radius:24px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  backdrop-filter:blur(40px);
+  box-shadow:var(--shadow);
+}
+
+.menu h2 {
+  margin-top:0;
+}
+
+.search,.field {
+  width:100%;
+  padding:13px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(130,140,180,.12);
+  color:var(--text);
+  outline:none;
+}
+
+.search:focus,.field:focus {
+  border-color:var(--accent);
+}
+
+.app-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+.app-tile {
+  padding:15px 5px;
+  border-radius:14px;
+  background:rgba(130,140,180,.12);
+  text-align:center;
+  font-size:12px;
+}
+
+.app-tile span {
+  display:block;
+  font-size:29px;
+  margin-bottom:8px;
+}
+
+.window {
+  position:absolute;
+  z-index:10;
+  left:20%;
+  top:12%;
+  width:min(780px,calc(100vw - 20px));
+  height:min(520px,calc(100dvh - 110px));
+  min-width:300px;
+  min-height:220px;
+  resize:both;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  border:1px solid var(--border);
+  border-radius:17px;
+  background:var(--panel);
+  backdrop-filter:blur(40px);
+  box-shadow:var(--shadow);
+}
+
+.window.maximized {
+  left:8px!important;
+  top:8px!important;
+  width:calc(100vw - 16px)!important;
+  height:calc(100dvh - 96px)!important;
+  resize:none;
+}
+
+.titlebar {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-bottom:1px solid var(--border);
+  background:rgba(130,140,180,.08);
+  cursor:move;
+  user-select:none;
+  touch-action:none;
+}
+
+.titlebar strong {
+  flex:1;
+}
+
+.window-controls {
+  display:flex;
+  gap:6px;
+}
+
+.window-controls button {
+  width:31px;
+  height:28px;
+  border-radius:8px;
+  background:rgba(130,140,180,.18);
+}
+
+.window-controls .close:hover {
+  background:#e34d66;
+  color:white;
+}
+
+.window-content {
+  flex:1;
+  overflow:auto;
+  padding:22px;
+}
+
+.window-content h2 {
+  margin-top:0;
+}
+
+p {
+  color:var(--muted);
+}
+
+.card {
+  padding:17px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(130,140,180,.09);
+  margin-bottom:13px;
+}
+
+.row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn {
+  padding:11px 15px;
+  border-radius:11px;
+  background:rgba(130,140,180,.2);
+}
+
+.primary {
+  background:var(--accent);
+  color:white;
+}
+
+.editor {
+  width:100%;
+  min-height:200px;
+  height:65%;
+  padding:15px;
+  resize:vertical;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(130,140,180,.09);
+  color:var(--text);
+  outline:none;
+}
+
+.file-item {
+  display:block;
+  width:100%;
+  padding:14px;
+  margin:7px 0;
+  text-align:left;
+  border-radius:11px;
+  background:rgba(130,140,180,.12);
+}
+
+.calc {
+  max-width:350px;
+  margin:auto;
+}
+
+.calc-display {
+  font-size:32px;
+  text-align:right;
+  margin-bottom:12px;
+}
+
+.calc-keys {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.calc-keys button {
+  padding:17px 5px;
+  border-radius:11px;
+  background:rgba(130,140,180,.18);
+  font-size:19px;
+}
+
+.calc-keys button.operator {
+  background:rgba(139,124,255,.4);
+}
+
+.calc-keys button.equals {
+  background:var(--accent);
+  color:white;
+}
+
+.calendar-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:7px;
+  text-align:center;
+}
+
+.calendar-grid div {
+  padding:11px 3px;
+  border-radius:9px;
+  background:rgba(130,140,180,.1);
+}
+
+.calendar-grid .today {
+  background:var(--accent);
+  color:white;
+}
+
+.swatch {
+  width:90px;
+  height:65px;
+  border-radius:13px;
+  border:2px solid #ffffff80;
+}
+
+.terminal {
+  background:#050a12;
+  color:#80f5b0;
+  font-family:Consolas,monospace;
+  padding:15px;
+  border-radius:12px;
+  min-height:240px;
+  max-height:350px;
+  overflow:auto;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.terminal-input {
+  background:transparent;
+  color:#80f5b0;
+  border:0;
+  outline:none;
+  width:100%;
+  font-family:Consolas,monospace;
+  padding:10px 0;
+}
+
+#toast {
+  position:absolute;
+  z-index:1500;
+  right:20px;
+  bottom:95px;
+  max-width:320px;
+  padding:17px 20px;
+  border-radius:14px;
+  border:1px solid #ffffff30;
+  background:#151d38ee;
+  color:white;
+  box-shadow:var(--shadow);
+  display:none;
+}
+
+#lockscreen {
+  position:absolute;
+  inset:0;
+  z-index:2000;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  background:
+    radial-gradient(at 70% 20%,#6055bd,#071027 70%);
+  backdrop-filter:blur(40px);
+}
+
+#lockscreen h1 {
+  font-size:clamp(55px,10vw,105px);
+  margin:0;
+}
+
+.focus-banner {
+  position:absolute;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:800;
+  background:#111a33dc;
+  border:1px solid #ffffff30;
+  color:white;
+  padding:12px 20px;
+  border-radius:15px;
+}
+
+body.focus .desktop-icons,
+body.focus .top-label {
+  display:none;
+}
+
+@media(max-width:700px) {
+  .window {
+    left:8px!important;
+    top:40px!important;
+    width:calc(100vw - 16px)!important;
+    height:calc(100dvh - 140px)!important;
+    resize:none;
+  }
+
+  .app-grid {
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .taskbar {
+    gap:0;
+    padding:6px;
+  }
+
+  .taskbar button {
+    min-width:36px;
+    font-size:19px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="desktop">
+
+  <div class="top-label">NOVAOS 1.1 ULTRA</div>
+
+  <div class="desktop-icons" id="desktopIcons"></div>
+
+  <div id="windowLayer"></div>
+
+  <div id="focusBanner" class="focus-banner" hidden>
+    ✨ Focus Mode Active
+    <button class="btn" onclick="toggleFocus()">Exit</button>
+  </div>
+
+  <div id="startMenu" class="menu" hidden>
+    <div class="row" style="justify-content:space-between">
+      <h2>✦ NovaOS</h2>
+      <button class="btn" onclick="lockOS()">🔒 Lock</button>
+    </div>
+
+    <p>Welcome to your workspace.</p>
+
+    <input
+      id="appSearch"
+      class="search"
+      placeholder="Search applications..."
+      oninput="renderApps(this.value)"
+    >
+
+    <h3>Applications</h3>
+    <div id="appGrid" class="app-grid"></div>
+
+    <div class="card" style="margin-top:20px">
+      <strong>NovaOS 1.1 Ultra</strong>
+      <p>Your desktop. Your world.</p>
+      <button class="btn" onclick="toggleFocus()">✨ Focus Mode</button>
+    </div>
+  </div>
+
+  <div id="quickMenu" class="menu" hidden>
+    <h2>⚡ Quick Settings</h2>
+
+    <div class="row">
+      <button class="btn" onclick="openApp('settings')">
+        🎨 Appearance
+      </button>
+
+      <button class="btn" onclick="toggleFocus()">
+        ✨ Focus Mode
+      </button>
+
+      <button class="btn" onclick="lockOS()">
+        🔒 Lock
+      </button>
+    </div>
+
+    <p>NovaOS 1.1 Ultra Edition</p>
+  </div>
+
+  <div class="taskbar">
+    <button onclick="toggleMenu('startMenu')" title="Start">
+      <span class="nova-logo">✦</span>
+    </button>
+
+    <button onclick="openApp('files')" title="Files">📁</button>
+    <button onclick="openApp('browser')" title="Browser">🌐</button>
+    <button onclick="openApp('notes')" title="Notes">📝</button>
+    <button onclick="openApp('calculator')" title="Calculator">🧮</button>
+    <button onclick="openApp('terminal')" title="Terminal">⌨️</button>
+    <button onclick="openApp('settings')" title="Settings">⚙️</button>
+    <button onclick="toggleMenu('quickMenu')" title="Quick Settings">⚡</button>
+
+    <div class="task-clock" onclick="openApp('calendar')">
+      <div id="taskTime"></div>
+      <small id="taskDate"></small>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="lockscreen" hidden>
+    <div>
+      <div style="font-size:70px">✦</div>
+      <h1 id="lockTime"></h1>
+      <p id="lockDate"></p>
+
+      <button class="btn primary" onclick="unlockOS()">
+        Unlock NovaOS →
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+const STORAGE_KEY = "novaos-1-1-ultra";
+
+const defaults = {
+  theme:"dark",
+  wallpaper:"cosmos",
+  notes:"",
+  studio:"",
+  focus:false,
+  files:[
+    {
+      name:"Welcome.txt",
+      text:"Welcome to NovaOS 1.1 Ultra!\n\nYour desktop. Your world."
+    }
+  ]
+};
+
+let state;
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  state = {...defaults,...saved};
+
+  if (!Array.isArray(state.files)) {
+    state.files = [...defaults.files];
+  }
+} catch {
+  state = {...defaults};
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  } catch {
+    notify("Storage is unavailable. Changes may not be saved.");
+  }
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g,char=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[char]));
+}
+
+const apps = {
+  welcome:["Welcome","🚀"],
+  files:["File Explorer","📁"],
+  browser:["Nova Browser","🌐"],
+  notes:["Notes","📝"],
+  calculator:["Calculator","🧮"],
+  terminal:["Nova Terminal","⌨️"],
+  studio:["Nova Studio","💻"],
+  settings:["Settings","⚙️"],
+  calendar:["Calendar","📅"],
+  clock:["Clock","🕒"],
+  about:["About NovaOS","✦"]
+};
+
+let highestZ = 20;
+let windowCounter = 0;
+
+function notify(message) {
+  const toast = $("toast");
+
+  toast.textContent = message;
+  toast.style.display = "block";
+
+  clearTimeout(notify.timer);
+
+  notify.timer = setTimeout(()=>{
+    toast.style.display = "none";
+  },3500);
+}
+
+function renderApps(filter="") {
+  $("appGrid").innerHTML = Object.entries(apps)
+    .filter(([id,app])=>
+      app[0].toLowerCase().includes(filter.toLowerCase())
+    )
+    .map(([id,app])=>`
+      <button class="app-tile" data-app="${id}">
+        <span>${app[1]}</span>
+        ${app[0]}
+      </button>
+    `).join("");
+}
+
+function renderDesktopIcons() {
+  $("desktopIcons").innerHTML =
+    ["files","browser","notes","studio","settings"]
+    .map(id=>`
+      <button class="desktop-icon" data-app="${id}">
+        <span>${apps[id][1]}</span>
+        ${apps[id][0]}
+      </button>
+    `).join("");
+}
+
+function toggleMenu(id) {
+  const menu = $(id);
+  const shouldOpen = menu.hidden;
+
+  $("startMenu").hidden = true;
+  $("quickMenu").hidden = true;
+
+  menu.hidden = !shouldOpen;
+
+  if (id === "startMenu" && shouldOpen) {
+    $("appSearch").focus();
+  }
+}
+
+function focusWindow(win) {
+  win.style.zIndex = ++highestZ;
+}
+
+function openApp(id) {
+  if (!apps[id]) return;
+
+  $("startMenu").hidden = true;
+  $("quickMenu").hidden = true;
+
+  const existing = document.querySelector(
+    `.window[data-app="${id}"]`
+  );
+
+  if (existing) {
+    existing.hidden = false;
+    focusWindow(existing);
+    return;
+  }
+
+  const win = document.createElement("section");
+
+  win.className = "window";
+  win.dataset.app = id;
+  win.id = "nova-window-" + (++windowCounter);
+
+  const offset = windowCounter % 7;
+
+  win.style.left = `calc(17% + ${offset*24}px)`;
+  win.style.top = `${9+offset*3}%`;
+
+  win.innerHTML = `
+    <div class="titlebar">
+      <span>${apps[id][1]}</span>
+      <strong>${apps[id][0]}</strong>
+
+      <div class="window-controls">
+        <button data-control="min">−</button>
+        <button data-control="max">□</button>
+        <button class="close" data-control="close">×</button>
+      </div>
+    </div>
+
+    <div class="window-content"></div>
+  `;
+
+  $("windowLayer").appendChild(win);
+
+  focusWindow(win);
+  makeDraggable(win);
+
+  const content = win.querySelector(".window-content");
+
+  const handlers = {
+    welcome:welcomeApp,
+    files:filesApp,
+    browser:browserApp,
+    notes:notesApp,
+    calculator:calculatorApp,
+    terminal:terminalApp,
+    studio:studioApp,
+    settings:settingsApp,
+    calendar:calendarApp,
+    clock:clockApp,
+    about:aboutApp
+  };
+
+  handlers[id](content);
+}
+
+function makeDraggable(win) {
+  const bar = win.querySelector(".titlebar");
+
+  let dragging = false;
+  let startX,startY,left,top;
+
+  bar.addEventListener("pointerdown",event=>{
+    if (
+      event.target.closest("button") ||
+      win.classList.contains("maximized")
+    ) return;
+
+    dragging = true;
+
+    startX = event.clientX;
+    startY = event.clientY;
+
+    left = win.offsetLeft;
+    top = win.offsetTop;
+
+    focusWindow(win);
+
+    bar.setPointerCapture(event.pointerId);
+  });
+
+  bar.addEventListener("pointermove",event=>{
+    if (!dragging) return;
+
+    const x = left+event.clientX-startX;
+    const y = top+event.clientY-startY;
+
+    win.style.left =
+      Math.max(0,Math.min(x,innerWidth-100))+"px";
+
+    win.style.top =
+      Math.max(0,Math.min(y,innerHeight-120))+"px";
+  });
+
+  bar.addEventListener("pointerup",()=>{
+    dragging = false;
+  });
+
+  bar.addEventListener("pointercancel",()=>{
+    dragging = false;
+  });
+
+  win.addEventListener("pointerdown",()=>{
+    focusWindow(win);
+  });
+}
+
+document.addEventListener("click",event=>{
+  const appButton = event.target.closest("[data-app]");
+
+  if (
+    appButton &&
+    !appButton.classList.contains("window")
+  ) {
+    openApp(appButton.dataset.app);
+    return;
+  }
+
+  const control = event.target.closest("[data-control]");
+
+  if (control) {
+    const win = control.closest(".window");
+    const action = control.dataset.control;
+
+    if (action === "close") {
+      win.remove();
+    }
+
+    if (action === "min") {
+      win.hidden = true;
+    }
+
+    if (action === "max") {
+      win.classList.toggle("maximized");
+    }
+
+    return;
+  }
+
+  if (
+    !event.target.closest(".menu") &&
+    !event.target.closest(".taskbar")
+  ) {
+    $("startMenu").hidden = true;
+    $("quickMenu").hidden = true;
+  }
+});
+
+function welcomeApp(c) {
+  c.innerHTML = `
+    <div style="text-align:center;padding:25px">
+      <div style="font-size:75px">✦</div>
+
+      <h1>Welcome to NovaOS</h1>
+      <h2>Ultra Edition 1.1</h2>
+
+      <p>Your desktop. Your world.</p>
+
+      <div class="card">
+        <h3>A new desktop experience</h3>
+        <p>
+          Explore applications, personalise your desktop,
+          create documents and discover NovaOS.
+        </p>
+      </div>
+
+      <button class="btn primary" data-app="files">
+        Explore NovaOS →
+      </button>
+
+      <button class="btn" data-app="about">
+        System Information
+      </button>
+    </div>
+  `;
+}
+
+function notesApp(c) {
+  c.innerHTML = `
+    <h2>📝 Nova Notes</h2>
+    <p>Your notes save automatically.</p>
+
+    <textarea
+      class="editor"
+      id="novaNotes"
+      placeholder="Start writing your ideas..."
+    ></textarea>
+
+    <p id="notesStatus">Ready</p>
+  `;
+
+  const editor = c.querySelector("#novaNotes");
+
+  editor.value = state.notes;
+
+  editor.addEventListener("input",()=>{
+    state.notes = editor.value;
+    save();
+
+    c.querySelector("#notesStatus").textContent =
+      "Changes saved";
+  });
+}
+
+function filesApp(c) {
+  function render() {
+    c.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <h2>📁 File Explorer</h2>
+
+        <button class="btn primary" id="newFile">
+          + New File
+        </button>
+      </div>
+
+      <div class="card">
+        <strong>Home / Documents</strong>
+        <p>NovaOS Virtual Storage</p>
+      </div>
+
+      <div id="fileList"></div>
+      <div id="fileEditor"></div>
+    `;
+
+    c.querySelector("#fileList").innerHTML =
+      state.files.map((file,index)=>`
+        <button class="file-item" data-file="${index}">
+          📄 ${escapeHTML(file.name)}
+        </button>
+      `).join("");
+
+    c.querySelector("#newFile").onclick = ()=>{
+      const name = prompt(
+        "Enter a file name:",
+        "New Document.txt"
+      );
+
+      if (!name || !name.trim()) return;
+
+      state.files.push({
+        name:name.trim().slice(0,80),
+        text:""
+      });
+
+      save();
+      render();
+
+      editFile(state.files.length-1);
+    };
+
+    c.querySelectorAll("[data-file]").forEach(button=>{
+      button.onclick = ()=>{
+        editFile(Number(button.dataset.file));
+      };
+    });
+  }
+
+  function editFile(index) {
+    const file = state.files[index];
+
+    if (!file) return;
+
+    const box = c.querySelector("#fileEditor");
+
+    box.innerHTML = `
+      <div class="card">
+        <h3>${escapeHTML(file.name)}</h3>
+
+        <textarea class="editor" style="height:180px"></textarea>
+
+        <div class="row">
+          <button class="btn" id="renameFile">Rename</button>
+          <button class="btn" id="deleteFile">Delete</button>
+          <button class="btn primary" id="downloadFile">
+            Download
+          </button>
+        </div>
+      </div>
+    `;
+
+    const editor = box.querySelector("textarea");
+
+    editor.value = file.text;
+
+    editor.oninput = ()=>{
+      file.text = editor.value;
+      save();
+    };
+
+    box.querySelector("#renameFile").onclick = ()=>{
+      const name = prompt("New file name:",file.name);
+
+      if (!name || !name.trim()) return;
+
+      file.name = name.trim().slice(0,80);
+
+      save();
+      render();
+    };
+
+    box.querySelector("#deleteFile").onclick = ()=>{
+      if (!confirm("Delete this virtual file?")) return;
+
+      state.files.splice(index,1);
+
+      save();
+      render();
+    };
+
+    box.querySelector("#downloadFile").onclick = ()=>{
+      const blob = new Blob(
+        [file.text],
+        {type:"text/plain"}
+      );
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = file.name;
+      link.click();
+
+      setTimeout(()=>{
+        URL.revokeObjectURL(url);
+      },1000);
+    };
+  }
+
+  render();
+}
+
+/* NOVAOS CALCULATOR — REBUILT */
+
+function calculatorApp(c) {
+  c.innerHTML = `
+    <div class="calc">
+      <h2>🧮 Nova Calculator</h2>
+
+      <input
+        class="field calc-display"
+        id="calcDisplay"
+        value="0"
+        readonly
+      >
+
+      <div class="calc-keys" id="calcKeys"></div>
+    </div>
+  `;
+
+  const display = c.querySelector("#calcDisplay");
+
+  const keys = [
+    "C","⌫","%","÷",
+    "7","8","9","×",
+    "4","5","6","−",
+    "1","2","3","+",
+    "±","0",".","="
+  ];
+
+  let first = null;
+  let operator = null;
+  let newNumber = true;
+
+  function calculate(a,b,op) {
+    switch(op) {
+      case "+": return a+b;
+      case "−": return a-b;
+      case "×": return a*b;
+      case "÷": return b===0 ? NaN : a/b;
+      default: return b;
+    }
+  }
+
+  function press(key) {
+    const current = display.value;
+
+    if (key==="C") {
+      first = null;
+      operator = null;
+      newNumber = true;
+      display.value = "0";
+      return;
+    }
+
+    if (key==="⌫") {
+      display.value =
+        current.length>1 ? current.slice(0,-1) : "0";
+      return;
+    }
+
+    if (key==="±") {
+      display.value = String(-Number(current));
+      return;
+    }
+
+    if (key==="%") {
+      display.value = String(Number(current)/100);
+      return;
+    }
+
+    // Only actual digits and decimal points are accepted.
+    if (/^[0-9.]$/.test(key)) {
+      if (
+        key==="." &&
+        !newNumber &&
+        current.includes(".")
+      ) return;
+
+      if (newNumber) {
+        display.value = key==="." ? "0." : key;
+      } else {
+        display.value =
+          current==="0" && key!=="."
+          ? key
+          : current+key;
+      }
+
+      newNumber = false;
+      return;
+    }
+
+    if (["÷","×","−","+"].includes(key)) {
+      if (
+        first!==null &&
+        operator!==null &&
+        !newNumber
+      ) {
+        first = calculate(
+          first,
+          Number(display.value),
+          operator
+        );
+
+        display.value = String(first);
+      } else {
+        first = Number(display.value);
+      }
+
+      operator = key;
+      newNumber = true;
+      return;
+    }
+
+    if (key==="=") {
+      if (first===null || operator===null) return;
+
+      const second = Number(display.value);
+
+      const result = calculate(
+        first,
+        second,
+        operator
+      );
+
+      display.value = Number.isFinite(result)
+        ? String(Number(result.toPrecision(12)))
+        : "Error";
+
+      first = null;
+      operator = null;
+      newNumber = true;
+    }
+  }
+
+  c.querySelector("#calcKeys").innerHTML =
+    keys.map(key=>{
+      const cls = key==="="
+        ? "equals"
+        : ["÷","×","−","+"].includes(key)
+        ? "operator"
+        : "";
+
+      return `
+        <button class="${cls}" data-key="${key}">
+          ${key}
+        </button>
+      `;
+    }).join("");
+
+  c.querySelectorAll("[data-key]").forEach(button=>{
+    button.onclick = ()=>{
+      press(button.dataset.key);
+    };
+  });
+}
+
+/* NOVA BROWSER */
+
+function browserApp(c) {
+  c.innerHTML = `
+    <h2>🌐 Nova Browser</h2>
+
+    <div class="row">
+      <input
+        class="field"
+        id="browserAddress"
+        value="https://www.wikipedia.org"
+        style="flex:1"
+      >
+
+      <button class="btn primary" id="browserGo">
+        Open ↗
+      </button>
+    </div>
+
+    <div class="card" style="text-align:center;margin-top:20px">
+      <div style="font-size:70px">🌍</div>
+
+      <h2>Explore the Web</h2>
+
+      <p>Enter a website address to browse.</p>
+
+      <div class="row" style="justify-content:center">
+        <button class="btn" data-site="https://www.google.com">
+          Google
+        </button>
+
+        <button class="btn" data-site="https://www.wikipedia.org">
+          Wikipedia
+        </button>
+
+        <button class="btn" data-site="https://www.bbc.com">
+          BBC
+        </button>
+      </div>
+
+      <p>Websites open in a separate browser tab.</p>
+    </div>
+  `;
+
+  const address = c.querySelector("#browserAddress");
+
+  function go() {
+    let url = address.value.trim();
+
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://"+url;
+    }
+
+    try {
+      const parsed = new URL(url);
+
+      if (!["http:","https:"].includes(parsed.protocol)) {
+        throw new Error("Unsupported address");
+      }
+
+      window.open(
+        parsed.href,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } catch {
+      notify("Please enter a valid website address.");
+    }
+  }
+
+  c.querySelector("#browserGo").onclick = go;
+
+  c.querySelectorAll("[data-site]").forEach(button=>{
+    button.onclick = ()=>{
+      address.value = button.dataset.site;
+      go();
+    };
+  });
+}
+
+/* NOVA TERMINAL */
+
+function terminalApp(c) {
+  c.innerHTML = `
+    <h2>⌨️ Nova Terminal</h2>
+
+    <div class="terminal" id="terminalOutput"></div>
+
+    <input
+      class="terminal-input"
+      id="terminalInput"
+      placeholder="Type a command and press Enter..."
+      autocomplete="off"
+    >
+  `;
+
+  const output = c.querySelector("#terminalOutput");
+  const input = c.querySelector("#terminalInput");
+
+  function print(message) {
+    output.textContent += message+"\n";
+    output.scrollTop = output.scrollHeight;
+  }
+
+  print("Nova Terminal v1.1");
+  print("Copyright NovaOS Development");
+  print("Type 'help' to see available commands.");
+  print("");
+
+  input.addEventListener("keydown",event=>{
+    if (event.key!=="Enter") return;
+
+    const command = input.value.trim();
+    const lower = command.toLowerCase();
+
+    print("nova@desktop > "+command);
+
+    input.value = "";
+
+    if (lower==="help") {
+      print("Available commands:");
+      print("help       - Show commands");
+      print("clear      - Clear terminal");
+      print("date       - Show current date");
+      print("time       - Show current time");
+      print("version    - Show NovaOS version");
+      print("whoami     - Show current user");
+      print("apps       - List applications");
+      print("open notes - Launch Notes");
+      print("open files - Launch File Explorer");
+      print("open settings - Launch Settings");
+      print("echo TEXT  - Print text");
+      print("neofetch   - Show system information");
+    }
+
+    else if (lower==="clear") {
+      output.textContent = "";
+    }
+
+    else if (lower==="date") {
+      print(new Date().toDateString());
+    }
+
+    else if (lower==="time") {
+      print(new Date().toLocaleTimeString());
+    }
+
+    else if (lower==="version") {
+      print("NovaOS 1.1 Ultra");
+    }
+
+    else if (lower==="whoami") {
+      print("nova-user");
+    }
+
+    else if (lower==="apps") {
+      print(Object.keys(apps).join(", "));
+    }
+
+    else if (lower==="neofetch") {
+      print("       ✦ NOVAOS");
+      print("       Version: 1.1 Ultra");
+      print("       Platform: Web");
+      print("       Engine: JavaScript");
+      print("       Theme: "+state.theme);
+      print("       Wallpaper: "+state.wallpaper);
+    }
+
+    else if (lower.startsWith("echo ")) {
+      print(command.slice(5));
+    }
+
+    else if (lower.startsWith("open ")) {
+      const app = lower.slice(5).trim();
+
+      if (apps[app]) {
+        openApp(app);
+        print("Launching "+app+"...");
+      } else {
+        print("Application not found.");
+      }
+    }
+
+    else if (lower==="") {
+      return;
+    }
+
+    else {
+      print("Unknown command. Type 'help'.");
+    }
+
+    print("");
+  });
+}
+
+/* NOVA STUDIO */
+
+function studioApp(c) {
+  c.innerHTML = `
+    <h2>💻 Nova Studio</h2>
+
+    <p>Write HTML, CSS, JavaScript or plain text.</p>
+
+    <textarea
+      class="editor"
+      id="studioEditor"
+      spellcheck="false"
+      placeholder="Start coding..."
+    ></textarea>
+
+    <div class="row">
+      <button class="btn primary" id="studioDownload">
+        Download Code
+      </button>
+
+      <button class="btn" id="studioClear">
+        Clear Editor
+      </button>
+    </div>
+
+    <p id="studioStatus">Ready</p>
+  `;
+
+  const editor = c.querySelector("#studioEditor");
+
+  editor.value = state.studio;
+
+  editor.addEventListener("input",()=>{
+    state.studio = editor.value;
+    save();
+
+    c.querySelector("#studioStatus").textContent =
+      "Changes saved";
+  });
+
+  c.querySelector("#studioDownload").onclick = ()=>{
+    const blob = new Blob(
+      [editor.value],
+      {type:"text/plain"}
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "nova-project.txt";
+    link.click();
+
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);
+    },1000);
+  };
+
+  c.querySelector("#studioClear").onclick = ()=>{
+    if (!confirm("Clear your editor?")) return;
+
+    editor.value = "";
+    state.studio = "";
+
+    save();
+  };
+}
+
+/* SETTINGS */
+
+function settingsApp(c) {
+  c.innerHTML = `
+    <h2>⚙️ Nova Settings</h2>
+
+    <p>Make NovaOS your own.</p>
+
+    <div class="card">
+      <h3>🎨 Appearance</h3>
+
+      <label>Theme</label>
+
+      <select class="field" id="themeSelect">
+        <option value="dark">Dark Mode</option>
+        <option value="light">Light Mode</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h3>🌌 Wallpapers</h3>
+
+      <div class="row">
+        <button
+          class="swatch"
+          data-wall="cosmos"
+          title="Cosmos"
+          style="background:linear-gradient(135deg,#07112d,#6254ba)"
+        ></button>
+
+        <button
+          class="swatch"
+          data-wall="aurora"
+          title="Aurora"
+          style="background:linear-gradient(135deg,#188e82,#392a75)"
+        ></button>
+
+        <button
+          class="swatch"
+          data-wall="sunset"
+          title="Sunset"
+          style="background:linear-gradient(135deg,#fa8c74,#78336d)"
+        ></button>
+
+        <button
+          class="swatch"
+          data-wall="midnight"
+          title="Midnight"
+          style="background:linear-gradient(135deg,#020613,#142c52)"
+        ></button>
+
+        <button
+          class="swatch"
+          data-wall="nebula"
+          title="Nebula"
+          style="background:linear-gradient(135deg,#ba3da8,#2258b9)"
+        ></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>✨ Focus Mode</h3>
+
+      <p>Hide desktop distractions.</p>
+
+      <button class="btn" id="focusButton">
+        Toggle Focus Mode
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>💾 Storage</h3>
+
+      <p>
+        Your notes, virtual files and preferences are
+        saved locally in this browser.
+      </p>
+
+      <button class="btn" id="resetButton">
+        Reset NovaOS
+      </button>
+    </div>
+  `;
+
+  c.querySelector("#themeSelect").value = state.theme;
+
+  c.querySelector("#themeSelect").onchange = event=>{
+    state.theme = event.target.value;
+    applySettings();
+  };
+
+  c.querySelectorAll("[data-wall]").forEach(button=>{
+    button.onclick = ()=>{
+      state.wallpaper = button.dataset.wall;
+      applySettings();
+      notify("Wallpaper changed successfully!");
+    };
+  });
+
+  c.querySelector("#focusButton").onclick = toggleFocus;
+
+  c.querySelector("#resetButton").onclick = ()=>{
+    if (!confirm(
+      "Reset NovaOS? This deletes your saved notes and virtual files."
+    )) return;
+
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  };
+}
+
+function applySettings() {
+  document.body.classList.toggle(
+    "light",
+    state.theme==="light"
+  );
+
+  $("desktop").className =
+    state.wallpaper==="cosmos"
+      ? ""
+      : state.wallpaper;
+
+  document.body.classList.toggle(
+    "focus",
+    Boolean(state.focus)
+  );
+
+  $("focusBanner").hidden = !state.focus;
+
+  save();
+}
+
+function toggleFocus() {
+  state.focus = !state.focus;
+
+  applySettings();
+
+  $("startMenu").hidden = true;
+  $("quickMenu").hidden = true;
+
+  notify(
+    state.focus
+      ? "Focus Mode activated"
+      : "Focus Mode disabled"
+  );
+}
+
+/* CALENDAR */
+
+function calendarApp(c) {
+  let current = new Date();
+
+  function render() {
+    const year = current.getFullYear();
+    const month = current.getMonth();
+
+    const today = new Date();
+
+    const firstDay = new Date(year,month,1).getDay();
+    const totalDays = new Date(year,month+1,0).getDate();
+
+    c.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <h2>
+          📅 ${current.toLocaleDateString(undefined,{
+            month:"long",
+            year:"numeric"
+          })}
+        </h2>
+
+        <div>
+          <button class="btn" id="prevMonth">←</button>
+          <button class="btn" id="nextMonth">→</button>
+        </div>
+      </div>
+
+      <div class="calendar-grid" id="calendarGrid"></div>
+    `;
+
+    let html = [
+      "Sun","Mon","Tue","Wed","Thu","Fri","Sat"
+    ].map(day=>`<div><b>${day}</b></div>`).join("");
+
+    for (let i=0;i<firstDay;i++) {
+      html += "<div></div>";
+    }
+
+    for (let day=1;day<=totalDays;day++) {
+      const isToday =
+        today.getDate()===day &&
+        today.getMonth()===month &&
+        today.getFullYear()===year;
+
+      html += `
+        <div class="${isToday?"today":""}">
+          ${day}
+        </div>
+      `;
+    }
+
+    c.querySelector("#calendarGrid").innerHTML = html;
+
+    c.querySelector("#prevMonth").onclick = ()=>{
+      current = new Date(year,month-1,1);
+      render();
+    };
+
+    c.querySelector("#nextMonth").onclick = ()=>{
+      current = new Date(year,month+1,1);
+      render();
+    };
+  }
+
+  render();
+}
+
+/* CLOCK */
+
+function clockApp(c) {
+  c.innerHTML = `
+    <div style="text-align:center;padding:40px 0">
+      <h2>🕒 Nova Clock</h2>
+
+      <div
+        id="bigClock"
+        style="font-size:55px;font-weight:bold"
+      ></div>
+
+      <p id="bigClockDate"></p>
+    </div>
+  `;
+
+  function update() {
+    if (!c.isConnected) {
+      clearInterval(timer);
+      return;
+    }
+
+    const now = new Date();
+
+    c.querySelector("#bigClock").textContent =
+      now.toLocaleTimeString();
+
+    c.querySelector("#bigClockDate").textContent =
+      now.toLocaleDateString(undefined,{
+        weekday:"long",
+        day:"numeric",
+        month:"long",
+        year:"numeric"
+      });
+  }
+
+  update();
+
+  const timer = setInterval(update,1000);
+}
+
+/* ABOUT */
+
+function aboutApp(c) {
+  c.innerHTML = `
+    <div style="text-align:center">
+      <div style="font-size:85px">✦</div>
+
+      <h1>NovaOS</h1>
+      <h2>Ultra Edition 1.1</h2>
+
+      <p>Your desktop. Your world.</p>
+
+      <div class="card" style="text-align:left">
+        <h3>System Information</h3>
+
+        <p>System: NovaOS</p>
+        <p>Version: 1.1 Ultra</p>
+        <p>Platform: Web Desktop Simulation</p>
+        <p>Technology: HTML, CSS, JavaScript</p>
+        <p>Storage: Browser Local Storage</p>
+        <p>Release Channel: Development</p>
+      </div>
+
+      <p>Built for creativity, development and exploration.</p>
+    </div>
+  `;
+}
+
+/* CLOCK AND LOCK SCREEN */
+
+function updateSystemClock() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString(undefined,{
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+
+  const date = now.toLocaleDateString(undefined,{
+    day:"2-digit",
+    month:"short"
+  });
+
+  $("taskTime").textContent = time;
+  $("taskDate").textContent = date;
+
+  $("lockTime").textContent = time;
+
+  $("lockDate").textContent =
+    now.toLocaleDateString(undefined,{
+      weekday:"long",
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    });
+}
+
+function lockOS() {
+  $("startMenu").hidden = true;
+  $("quickMenu").hidden = true;
+
+  $("lockscreen").hidden = false;
+}
+
+function unlockOS() {
+  $("lockscreen").hidden = true;
+}
+
+/* KEYBOARD SHORTCUTS */
+
+document.addEventListener("keydown",event=>{
+  if (event.ctrlKey && event.code==="Space") {
+    event.preventDefault();
+    toggleMenu("startMenu");
+  }
+
+  if (event.key==="Escape") {
+    $("startMenu").hidden = true;
+    $("quickMenu").hidden = true;
+  }
+
+  if (
+    event.ctrlKey &&
+    event.altKey &&
+    event.key.toLowerCase()==="t"
+  ) {
+    event.preventDefault();
+    openApp("terminal");
+  }
+});
+
+/* INITIALISATION */
+
+renderApps();
+renderDesktopIcons();
+applySettings();
+
+updateSystemClock();
+setInterval(updateSystemClock,1000);
+
+setTimeout(()=>{
+  openApp("welcome");
+  notify("Welcome to NovaOS 1.1 Ultra!");
+},500);
+
+</script>
+</body>
+</html>
